@@ -144,7 +144,7 @@ RSpec.describe Soloist::Config do
       before { allow(ENV).to receive(:[]).and_return("LOLWUT") }
 
       it "does not merge the attribute" do
-        expect(config.compiled["recipes"]).to be_empty
+        expect(config.compiled.recipes).to be_empty
       end
     end
 
