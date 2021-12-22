@@ -1,6 +1,7 @@
 #!/bin/bash
 
 set -e
+export DEBIAN_FRONTEND=noninteractive
 
 echo "Updating package list"
 sudo apt-get update > /dev/null
@@ -31,7 +32,11 @@ RVMRC_CONTENTS
 
 echo "Detecting RVM requirements"
 
-packages="build-essential openssl libreadline8 libreadline-dev curl git-core zlib1g zlib1g-dev libssl-dev libyaml-dev libsqlite3-dev sqlite3 libxml2-dev libxslt-dev autoconf libc6-dev libgdbm-dev ncurses-dev automake libtool bison subversion pkg-config libffi-dev libcurl4-openssl-dev libncurses5-dev libgmp-dev"
+packages="build-essential openssl libreadline8 libreadline-dev curl git-core
+          zlib1g zlib1g-dev libssl-dev libyaml-dev libsqlite3-dev sqlite3
+          libxml2-dev libxslt-dev autoconf libc6-dev libgdbm-dev
+          ncurses-dev automake libtool bison subversion pkg-config libffi-dev
+          libcurl4-openssl-dev libncurses5-dev libgmp-dev"
 
 echo "Detected RVM requirements: $packages"
 
@@ -54,9 +59,18 @@ fi
 
 # Reference: https://rvm.io/integration/sudo
 echo "Enabling rvm sudo"
-sudo sed -i -e \
-  '/^Defaults[[:space:]]secure_path=.*/  s/$/\nDefaults\tenv_keep +="rvm_bin_path GEM_HOME IRBRC MY_RUBY_HOME rvm_path rvm_prefix rvm_version GEM_PATH rvmsudo_secure_path RUBY_VERSION rvm_ruby_string rvm_delete_flag"/' \
-  /etc/sudoers
+echo -e 'Defaults\tenv_keep +="rvm_bin_path GEM_HOME IRBRC MY_RUBY_HOME rvm_path rvm_prefix rvm_version GEM_PATH rvmsudo_secure_path RUBY_VERSION rvm_ruby_string rvm_delete_flag"' \
+  | sudo tee /etc/sudoers.d/rvm > /dev/null
 sudo sed -i -e '/^Defaults[[:space:]]secure_path=.*/d' /etc/sudoers
-echo 'export rvmsudo_secure_path=0' | sudo tee /etc/profile.d/rvm.sh > /dev/null
 
+if ! grep -q 'export rvmsudo_secure_path=0' /etc/profile.d/rvm.sh; then
+  echo 'export rvmsudo_secure_path=0' | sudo tee /etc/profile.d/rvm.sh > /dev/null
+fi
+
+# Vagrant/CI user sudo is aliased to rvmsudo
+echo "Enabling sudo=rvmsudo alias for ~${user}/.bash_profile"
+user_home="$(eval echo ~${user})"  ## Note: insecure, but who cares... it's CI!
+[ -e "${user_home}/.bash_profile" ] || touch ${user_home}/.bash_profile
+if ! grep -q 'alias sudo=rvmsudo' ${user_home}/.bash_profile; then
+  echo 'alias sudo=rvmsudo' | sudo tee -a ${user_home}/.bash_profile > /dev/null
+fi
