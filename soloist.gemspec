@@ -21,11 +21,11 @@ Gem::Specification.new do |s|
 
   s.license = 'MIT'
 
-  # chef 12.9.x and chef-zero 4.6.x dropped support for Ruby 2.0.x, which is
-  # El Capitan's system ruby. Gem versions are being locked to allow soloist
-  # to run with system Ruby.
+  # chef 12.9.x and chef-zero 4.6.x dropped support for Ruby 2.0.x,
+  # (El Capitan's system ruby).
+  # After Chef 15 we need chef-bin gem which provides chef-solo
   s.add_dependency "chef", ">= 13.1"
-  s.add_dependency "chef-bin", ">= 13.1"
+  s.add_dependency "chef-bin", ">= 15.0.240" # First release of chef-bin
   s.add_dependency "chef-zero", ">= 13.1"
 
   s.add_dependency "librarian-chef"
