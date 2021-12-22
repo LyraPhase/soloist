@@ -25,6 +25,7 @@ Gem::Specification.new do |s|
   # El Capitan's system ruby. Gem versions are being locked to allow soloist
   # to run with system Ruby.
   s.add_dependency "chef", ">= 13.1"
+  s.add_dependency "chef-bin", ">= 13.1"
   s.add_dependency "chef-zero", ">= 13.1"
 
   s.add_dependency "librarian-chef"
