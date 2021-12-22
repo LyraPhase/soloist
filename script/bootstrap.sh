@@ -51,3 +51,12 @@ else
   echo "Installing missing RVM requirements: $to_install"
   sudo apt-get --no-install-recommends install -y $to_install
 fi
+
+# Reference: https://rvm.io/integration/sudo
+echo "Enabling rvm sudo"
+sudo sed -i -e \
+  '/^Defaults[[:space:]]secure_path=.*/  s/$/\nDefaults\tenv_keep +="rvm_bin_path GEM_HOME IRBRC MY_RUBY_HOME rvm_path rvm_prefix rvm_version GEM_PATH rvmsudo_secure_path RUBY_VERSION rvm_ruby_string rvm_delete_flag"/' \
+  /etc/sudoers
+sudo sed -i -e '/^Defaults[[:space:]]secure_path=.*/d' /etc/sudoers
+echo 'export rvmsudo_secure_path=0' | sudo tee /etc/profile.d/rvm.sh > /dev/null
+
