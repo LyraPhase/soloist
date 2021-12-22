@@ -13,7 +13,7 @@ echo "Setting up RVM"
 user=$1
 [ -z "$user" ] && user="ubuntu"
 
-test -d /usr/local/rvm || curl -L https://get.rvm.io | sudo bash -s stable
+test -d /usr/local/rvm || curl -sSL https://get.rvm.io | sudo bash -s stable
 
 test -e /usr/local/rvm || sudo tee /etc/profile.d/rvm.sh > /dev/null <<RVMSH_CONTENT
 [[ -s "/usr/local/rvm/scripts/rvm" ]] && source "/usr/local/rvm/scripts/rvm"
@@ -31,7 +31,7 @@ RVMRC_CONTENTS
 
 echo "Detecting RVM requirements"
 
-packages="build-essential openssl libreadline6 libreadline6-dev curl git-core zlib1g zlib1g-dev libssl-dev libyaml-dev libsqlite3-dev sqlite3 libxml2-dev libxslt-dev autoconf libc6-dev libgdbm-dev ncurses-dev automake libtool bison subversion pkg-config libffi-dev"
+packages="build-essential openssl libreadline8 libreadline-dev curl git-core zlib1g zlib1g-dev libssl-dev libyaml-dev libsqlite3-dev sqlite3 libxml2-dev libxslt-dev autoconf libc6-dev libgdbm-dev ncurses-dev automake libtool bison subversion pkg-config libffi-dev libcurl4-openssl-dev libncurses5-dev libgmp-dev"
 
 echo "Detected RVM requirements: $packages"
 
