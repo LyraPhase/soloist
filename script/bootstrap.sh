@@ -14,6 +14,8 @@ echo "Setting up RVM"
 user=$1
 [ -z "$user" ] && user="ubuntu"
 
+curl -sSL https://rvm.io/mpapis.asc | sudo gpg --import -
+curl -sSL https://rvm.io/pkuczynski.asc | sudo gpg --import -
 test -d /usr/local/rvm || curl -sSL https://get.rvm.io | sudo bash -s stable
 
 test -e /usr/local/rvm || sudo tee /etc/profile.d/rvm.sh > /dev/null <<RVMSH_CONTENT
@@ -28,6 +30,7 @@ test -e /etc/rvmrc || sudo tee /etc/rvmrc > /dev/null <<RVMRC_CONTENTS
 rvm_install_on_use_flag=1
 rvm_trust_rvmrcs_flag=1
 rvm_gemset_create_on_use_flag=1
+rvmsudo_secure_path=0
 RVMRC_CONTENTS
 
 echo "Detecting RVM requirements"
@@ -63,14 +66,10 @@ echo -e 'Defaults\tenv_keep +="rvm_bin_path GEM_HOME IRBRC MY_RUBY_HOME rvm_path
   | sudo tee /etc/sudoers.d/rvm > /dev/null
 sudo sed -i -e '/^Defaults[[:space:]]secure_path=.*/d' /etc/sudoers
 
-if ! grep -q 'export rvmsudo_secure_path=0' /etc/profile.d/rvm.sh; then
-  echo 'export rvmsudo_secure_path=0' | sudo tee /etc/profile.d/rvm.sh > /dev/null
-fi
-
 # Vagrant/CI user sudo is aliased to rvmsudo
-echo "Enabling sudo=rvmsudo alias for ~${user}/.bash_profile"
+echo "Enabling sudo=rvmsudo alias for ~${user}/.profile"
 user_home="$(eval echo ~${user})"  ## Note: insecure, but who cares... it's CI!
-[ -e "${user_home}/.bash_profile" ] || touch ${user_home}/.bash_profile
-if ! grep -q 'alias sudo=rvmsudo' ${user_home}/.bash_profile; then
-  echo 'alias sudo=rvmsudo' | sudo tee -a ${user_home}/.bash_profile > /dev/null
+[ -e "${user_home}/.profile" ] || touch ${user_home}/.profile
+if ! grep -q 'alias sudo=rvmsudo' ${user_home}/.profile; then
+  echo 'alias sudo=rvmsudo' | sudo tee -a ${user_home}/.profile > /dev/null
 fi

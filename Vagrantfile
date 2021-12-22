@@ -15,13 +15,10 @@ Vagrant.configure("2") do |config|
     shell.args = ssh_key
   end
 
-  config.vm.provision 'shell', inline: 'curl -sSL https://rvm.io/mpapis.asc | sudo gpg --import -'
-  config.vm.provision 'shell', inline: 'curl -sSL https://rvm.io/pkuczynski.asc | sudo gpg --import -'
-
   config.vm.provision 'shell' do |shell|
     shell.path = File.expand_path('../script/bootstrap.sh', __FILE__)
-    shell.args = `whoami`.chomp
+    shell.args = '$SUDO_USER'
   end
   config.vm.provision 'shell', inline: "bash -lc 'rvm use --install --default ruby-3.0.3'"
-  config.vm.provision 'shell', inline: "bash -lc 'gem install chef --no-document'"
+  config.vm.provision 'shell', inline: "bash -lc 'cd /vagrant/ && bundle install'", privileged: false
 end
