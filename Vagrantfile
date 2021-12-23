@@ -19,6 +19,16 @@ Vagrant.configure("2") do |config|
     shell.path = File.expand_path('../script/bootstrap.sh', __FILE__)
     shell.args = '$SUDO_USER'
   end
-  config.vm.provision 'shell', inline: "bash -lc 'rvm use --install --default ruby-3.0.3'"
-  config.vm.provision 'shell', inline: "bash -lc 'cd /vagrant/ && bundle install'", privileged: false
+  # install .ruby-version @ .ruby-gemset
+  ruby_version = File.open('.ruby-version', 'r').read.chomp
+  ruby_gemset = File.open('.ruby-gemset', 'r').read.chomp
+  config.vm.provision 'shell', inline: "bash -lc 'rvm use --install --default ruby-#{ruby_version}; rvm gemset create #{ruby_gemset}'"
+  # Bundle install as user via rvmsudo
+  config.vm.provision 'shell', inline: "bash -lc 'cd /vagrant/ && rvmsudo bundle install'", privileged: false
+  # accept + persist chef license accept for non-interactive CI
+  config.vm.provision 'shell', inline: "bash -lc 'cd /vagrant/ && rvmsudo bundle exec chef-solo --chef-license accept --local-mode --no-listen --why-run'", privileged: false
+  # Run the ci script
+  config.vm.provision 'shell', inline: "bash -lc 'cd /vagrant/ && ./script/ci.sh'", privileged: false
+  # Run soloist integration test against fixtures
+  config.vm.provision 'shell', inline: "bash -lc 'cd /vagrant/test/fixtures && bundle exec soloist'", privileged: false
 end
