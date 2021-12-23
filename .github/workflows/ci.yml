@@ -1,0 +1,27 @@
+---
+name: ci
+
+"on":
+  pull_request:
+  push:
+    branches:
+      - master
+      - main
+      - develop
+
+jobs:
+  rspec:
+    strategy:
+      matrix:
+        ruby: [2.3, 2.4, 2.5, 2.6, 2.6.3, 3.0.0]
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+      - name: Install bundler + gems
+        run: |
+          gem install bundler
+          bundle install
+      - name: Run rspec ci.sh
+        run: |
+          ./script/ci.sh
+
