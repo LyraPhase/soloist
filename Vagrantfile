@@ -30,6 +30,12 @@ Vagrant.configure("2") do |config|
   config.vm.provision 'shell', inline: "bash -lc 'cd /vagrant/ && rvmsudo bundle exec chef-solo --chef-license accept --local-mode --no-listen --why-run'", privileged: false
   # Run the ci script
   config.vm.provision 'shell', inline: "bash -lc 'cd /vagrant/ && ./script/ci.sh'", privileged: false
+  # Install no-op test fixture cookbook ckbk
+  # NOTE: Librarian::Chef::Cli.new.install() suffers from a race condition
+  #       Thus, cookbook files may still be in the process of writing
+  #       while soloist tries to access them
+  # So, we must manually run it first... redundantly
+  config.vm.provision 'shell', inline: "bash -lc 'cd /vagrant/test/fixtures && bundle exec librarian-chef install'", privileged: false
   # Run soloist integration test against fixtures
   config.vm.provision 'shell', inline: "bash -lc 'cd /vagrant/test/fixtures && bundle exec soloist'", privileged: false
 end
