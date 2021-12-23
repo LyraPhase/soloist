@@ -23,6 +23,7 @@ Vagrant.configure("2") do |config|
   ruby_version = File.open('.ruby-version', 'r').read.chomp
   ruby_gemset = File.open('.ruby-gemset', 'r').read.chomp
   config.vm.provision 'shell', inline: "bash -lc 'rvm use --install --default ruby-#{ruby_version}; rvm gemset create #{ruby_gemset}'"
+  config.vm.provision 'shell', inline: "bash -lc 'cd /vagrant/ && gem install \"bundler:$(grep -A 1 \"BUNDLED WITH\" Gemfile.lock | tail -n 1)\"'"
   # Bundle install as user via rvmsudo
   config.vm.provision 'shell', inline: "bash -lc 'cd /vagrant/ && rvmsudo bundle install'", privileged: false
   # accept + persist chef license accept for non-interactive CI
