@@ -18,11 +18,10 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v2
-      - name: Install bundler + gems
-        run: |
-          gem install bundler
-          bundle install
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
       - name: Run rspec ci.sh
         run: |
           ./script/ci.sh
-
