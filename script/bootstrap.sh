@@ -26,11 +26,12 @@ test -x /usr/local/rvm || sudo chmod +x /etc/profile.d/rvm.sh
 
 grep "^$user:" /etc/passwd > /dev/null || sudo useradd -m $user -G sudo,rvm,admin -s /bin/bash
 
-test -e /etc/rvmrc || sudo tee /etc/rvmrc > /dev/null <<RVMRC_CONTENTS
+grep -q 'rvm_gemset_create_on_use_flag' /etc/rvmrc || sudo tee /etc/rvmrc > /dev/null <<RVMRC_CONTENTS
+umask u=rwx,g=rwx,o=rx
 rvm_install_on_use_flag=1
 rvm_trust_rvmrcs_flag=1
 rvm_gemset_create_on_use_flag=1
-rvmsudo_secure_path=0
+export rvmsudo_secure_path=0
 RVMRC_CONTENTS
 
 echo "Detecting RVM requirements"
