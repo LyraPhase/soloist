@@ -5,4 +5,3 @@ pkg/*
 /examples/cookbooks
 /examples/tmp
 tmp/
-Gemfile.lock

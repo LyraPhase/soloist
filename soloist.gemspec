@@ -24,9 +24,9 @@ Gem::Specification.new do |s|
   # chef 12.9.x and chef-zero 4.6.x dropped support for Ruby 2.0.x,
   # (El Capitan's system ruby).
   # After Chef 15 we need chef-bin gem which provides chef-solo
-  s.add_dependency "chef", ">= 13.1"
-  s.add_dependency "chef-bin", ">= 15.0.240" # First release of chef-bin
-  s.add_dependency "chef-zero", ">= 13.1"
+  s.add_dependency "chef"
+  s.add_dependency "chef-bin"
+  s.add_dependency "chef-zero"
 
   s.add_dependency "librarian-chef"
   s.add_dependency "thor"
