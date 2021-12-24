@@ -1,0 +1,6 @@
+#!/usr/bin/env ruby
+
+site 'https://supermarket.getchef.com/api/v1'
+
+# A sweet, do-nothing cookbook for tooling testing
+cookbook 'ckbk', '~> 0.2.7'

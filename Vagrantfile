@@ -1,21 +1,41 @@
 #!/usr/bin/env ruby
 
-Vagrant::Config.run do |config|
-  ssh_key = File.read(File.expand_path("~/.ssh/id_rsa.pub"))
+Vagrant.configure("2") do |config|
+  ssh_key = File.read(File.expand_path("~/.ssh/identity.lyra.pub"))
 
-  config.vm.box = "precise64"
-  config.vm.box_url = "http://files.vagrantup.com/#{config.vm.box}.box"
-  config.vm.network :hostonly, "192.168.6.66"
+  config.vm.box = "ubuntu/focal64"
+  config.vm.provider :virtualbox do |p|
+    p.name = "ubuntu-focal64"
+  end
+  config.vm.network 'private_network', ip: "192.168.6.66"
 
-  config.vm.provision :shell, :inline => "test -d /etc/skel/.ssh || mkdir /etc/skel/.ssh"
-  config.vm.provision :shell do |shell|
+  config.vm.provision 'shell', inline: 'test -d /etc/skel/.ssh || mkdir /etc/skel/.ssh'
+  config.vm.provision 'shell' do |shell|
     shell.inline = "echo $@ | tee /etc/skel/.ssh/authorized_keys"
     shell.args = ssh_key
   end
-  config.vm.provision :shell do |shell|
-    shell.path = File.expand_path("../script/bootstrap.sh", __FILE__)
-    shell.args = `whoami`.chomp
+
+  config.vm.provision 'shell' do |shell|
+    shell.path = File.expand_path('../script/bootstrap.sh', __FILE__)
+    shell.args = '$SUDO_USER'
   end
-  config.vm.provision :shell, :inline => "bash -lc 'rvm use --install --default ruby-1.9.3'"
-  config.vm.provision :shell, :inline => "bash -lc 'gem install chef --no-rdoc --no-ri'"
+  # install .ruby-version @ .ruby-gemset
+  ruby_version = File.open('.ruby-version', 'r').read.chomp
+  ruby_gemset = File.open('.ruby-gemset', 'r').read.chomp
+  config.vm.provision 'shell', inline: "bash -lc 'rvm use --install --default ruby-#{ruby_version}; rvm gemset create #{ruby_gemset}'"
+  config.vm.provision 'shell', inline: "bash -lc 'cd /vagrant/ && gem install \"bundler:$(grep -A 1 \"BUNDLED WITH\" Gemfile.lock | tail -n 1)\"'"
+  # Bundle install as user via rvmsudo
+  config.vm.provision 'shell', inline: "bash -lc 'cd /vagrant/ && rvmsudo bundle install'", privileged: false
+  # accept + persist chef license accept for non-interactive CI
+  config.vm.provision 'shell', inline: "bash -lc 'cd /vagrant/ && rvmsudo bundle exec chef-solo --chef-license accept --local-mode --no-listen --why-run'", privileged: false
+  # Run the ci script
+  config.vm.provision 'shell', inline: "bash -lc 'cd /vagrant/ && ./script/ci.sh'", privileged: false
+  # Install no-op test fixture cookbook ckbk
+  # NOTE: Librarian::Chef::Cli.new.install() suffers from a race condition
+  #       Thus, cookbook files may still be in the process of writing
+  #       while soloist tries to access them
+  # So, we must manually run it first... redundantly
+  config.vm.provision 'shell', inline: "bash -lc 'cd /vagrant/test/fixtures && bundle exec librarian-chef install'", privileged: false
+  # Run soloist integration test against fixtures
+  config.vm.provision 'shell', inline: "bash -lc 'cd /vagrant/test/fixtures && bundle exec soloist'", privileged: false
 end
