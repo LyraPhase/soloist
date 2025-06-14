@@ -4,6 +4,11 @@ RSpec.describe Soloist::Config do
   let(:soloist_rc_path) { File.expand_path("soloistrc", RSpec.configuration.tempdir) }
   let(:soloist_rc) { Soloist::RoyalCrown.new(:path => soloist_rc_path) }
   let(:config) { Soloist::Config.new(soloist_rc) }
+
+  before do
+    allow(config).to receive(:chef_cache_path) { '/var/chef/cache' }
+  end
+
   let(:cookbook_path) { File.expand_path("cookbooks", RSpec.configuration.tempdir) }
   let(:nested_cookbook_path) { File.expand_path("whoa/cookbooks", RSpec.configuration.tempdir) }
 

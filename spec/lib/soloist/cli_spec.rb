@@ -4,10 +4,22 @@ RSpec.describe Soloist::CLI do
   let(:cli) { Soloist::CLI.new }
   let(:base_path) { RSpec.configuration.tempdir }
   let(:soloistrc_path) { File.expand_path("soloistrc", base_path) }
+  let(:system_commands) { [] }
 
   before do
     FileUtils.mkdir_p(base_path)
+    # Setup method spies that still allow actual execution
     allow_any_instance_of(Soloist::Config).to receive(:exec)
+    allow_any_instance_of(Soloist::Config).to receive(:run_chef).and_call_original
+    allow_any_instance_of(Soloist::Config).to receive(:chef_solo).and_call_original
+    # Let chef_cache_path execute, but we've mocked the system call it uses
+    allow_any_instance_of(Soloist::Config).to receive(:chef_cache_path).and_call_original
+    # Mock the system call for cache path creation
+    allow_any_instance_of(Soloist::Config).to receive(:conditional_sudo).and_call_original
+    # This avoids actual sudo execution
+    allow_any_instance_of(Kernel).to receive(:system) { |_, c|
+      system_commands << c
+    }
   end
 
   describe "#chef" do
@@ -15,11 +27,10 @@ RSpec.describe Soloist::CLI do
       FileUtils.touch(soloistrc_path)
       Dir.chdir(base_path) do
         ENV["AUTRYITIS"] = "yodelmania"
-        expect(cli.soloist_config).to receive(:exec) do |chef_solo|
-          expect(chef_solo).to include("echo $AUTRYITIS")
-        end
         allow(cli.soloist_config).to receive(:chef_solo).and_return('echo $AUTRYITIS')
         cli.chef
+        expect(cli.soloist_config)
+          .to have_received(:exec).with(a_string_including('echo $AUTRYITIS'))
       end
     end
 
@@ -69,9 +80,10 @@ RSpec.describe Soloist::CLI do
 
       context "when the Berksfile does not exist" do
         it "runs chef" do
-          expect(cli.soloist_config).to receive(:exec)
           cli.chef
           expect(cli.soloist_config).to have_received(:exec).at_least(:once)
+            expect(cli.soloist_config)
+              .to have_received(:exec).with(a_string_including('chef-solo -c'))
         end
 
         it "does not run berkshelf" do
@@ -83,7 +95,10 @@ RSpec.describe Soloist::CLI do
       context "when the Berksfile exists" do
         let(:berksfile) { double("Berksfile") }
 
-        before { FileUtils.touch(File.expand_path("Berksfile", base_path)) }
+        before do
+          FileUtils.touch(File.expand_path("Berksfile", base_path))
+          system_commands.clear
+        end
 
         it "runs berkshelf" do
           expect(Berkshelf::Berksfile).to receive(:from_file).with('Berksfile').and_return(berksfile)
@@ -92,22 +107,33 @@ RSpec.describe Soloist::CLI do
         end
 
         context "when the user is not root" do
+          before do
+            system_commands.clear
+            allow(Process).to receive(:uid).and_return(1000) # Simulate a non-root user
+          end
           it "creates the cache path using sudo" do
-            expect(cli.soloist_config).to receive(:exec) do |command|
-              expect(command).to match(/^sudo -E/)
-            end
             cli.chef
+            expect(cli.soloist_config)
+              .to have_received(:conditional_sudo).with('mkdir -p /var/chef/cache')
+            expect(system_commands).to include('sudo -E mkdir -p /var/chef/cache')
+            expect(cli.soloist_config)
+              .to have_received(:exec).with(a_string_including('sudo -E'))
           end
         end
 
         context "when the user is root" do
-          before { allow(Process).to receive(:uid).and_return(0) }
+          before do
+            system_commands.clear
+            allow(Process).to receive(:uid).and_return(0)
+          end
 
-          it "creates the cache path" do
-            expect(cli.soloist_config).to receive(:exec) do |command|
-              expect(command).to_not match(/^sudo -E/)
-            end
+          it "does not use sudo but still creates cache path" do
+            commands = []
+            allow(cli.soloist_config).to receive(:exec) { |c| commands << c }
             cli.chef
+            expect(commands).to_not include(a_string_including("sudo -E"))
+            expect(system_commands).to include("mkdir -p /var/chef/cache")
+            expect(system_commands).not_to include(a_string_including("sudo -E"))
           end
         end
       end
