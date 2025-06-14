@@ -36,7 +36,7 @@ jobs:
         if: startsWith(matrix.ruby.version, '3.4')
         run: |
           mkdir -p vendor
-          ln -sf .github/fixtures/vendor/bundle vendor/bundle
+          ln -s .github/fixtures/.bundle .bundle
       - name: Run rspec ci.sh
         run: |
           ./script/ci.sh
