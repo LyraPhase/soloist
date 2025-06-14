@@ -21,7 +21,7 @@ jobs:
           - version: 3.1.4
           - version: 3.3.5
           - version: 3.4.0
-            bundler: './.github/fixtures/Gemfile-ruby-3.4.0.lock'
+            working-directory: ./.github/fixtures
 
     steps:
       - name: Check out code
@@ -30,7 +30,7 @@ jobs:
         with:
           ruby-version: ${{ matrix.ruby.version }}
           bundler-cache: true
-          bundler: ${{ matrix.ruby.bundler || 'Gemfile.lock' }}
+          working-directory: ${{ matrix.ruby.working-directory || '.' }}
       - name: Run rspec ci.sh
         run: |
           ./script/ci.sh
