@@ -67,27 +67,27 @@ RSpec.describe Soloist::CLI do
         end
       end
 
-      context "when the Cheffile does not exist" do
+      context "when the Berksfile does not exist" do
         it "runs chef" do
           expect(cli.soloist_config).to receive(:exec)
           cli.chef
+          expect(cli.soloist_config).to have_received(:exec).at_least(:once)
         end
 
-        it "does not run librarian" do
-          expect(Librarian::Chef::Cli).to_not receive(:with_environment)
+        it "does not run berkshelf" do
+          expect_any_instance_of(Berkshelf::Berksfile).to_not receive(:install)
           cli.chef
         end
       end
 
-      context "when the Cheffile exists" do
-        let(:cli_instance) { double(:cli_instance) }
+      context "when the Berksfile exists" do
+        let(:berksfile) { double("Berksfile") }
 
-        before { FileUtils.touch(File.expand_path("Cheffile", base_path)) }
+        before { FileUtils.touch(File.expand_path("Berksfile", base_path)) }
 
-        it "runs librarian" do
-          expect(Librarian::Chef::Cli).to receive(:with_environment).and_yield
-          expect(Librarian::Chef::Cli).to receive(:new).and_return(cli_instance)
-          expect(cli_instance).to receive(:install)
+        it "runs berkshelf" do
+          expect(Berkshelf::Berksfile).to receive(:from_file).with('Berksfile').and_return(berksfile)
+          expect(berksfile).to receive(:install)
           cli.chef
         end
 

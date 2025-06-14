@@ -28,7 +28,7 @@ Gem::Specification.new do |s|
   s.add_dependency "chef-bin"
   s.add_dependency "chef-zero"
 
-  #s.add_dependency "librarian-chef"
+  s.add_dependency "berkshelf"
   s.add_dependency "minitar-cli"
   s.add_dependency "thor"
 

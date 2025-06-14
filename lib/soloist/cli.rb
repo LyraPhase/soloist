@@ -1,4 +1,4 @@
-require "librarian/chef/cli"
+require 'berkshelf'
 require "soloist/config"
 require "soloist/spotlight"
 require "thor"
@@ -10,7 +10,7 @@ module Soloist
 
     desc "chef", "Run chef-solo"
     def chef
-      install_cookbooks if cheffile_exists?
+      install_cookbooks if berksfile_exists?
       soloist_config.run_chef
     end
 
@@ -28,9 +28,7 @@ module Soloist
     no_tasks do
       def install_cookbooks
         Dir.chdir(File.dirname(rc_path)) do
-          Librarian::Chef::Cli.with_environment do
-            Librarian::Chef::Cli.new.install
-          end
+          Berkshelf::Berksfile.from_file('Berksfile').install
         end
       end
 
@@ -46,8 +44,8 @@ module Soloist
       Soloist::Config.from_file(rc_local_path)
     end
 
-    def cheffile_exists?
-      File.exists?(File.expand_path("../Cheffile", rc_path))
+    def berksfile_exists?
+      File.exist?(File.expand_path('Berksfile', File.dirname(rc_path)))
     end
 
     def rc_path
