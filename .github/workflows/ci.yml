@@ -31,6 +31,11 @@ jobs:
           ruby-version: ${{ matrix.ruby.version }}
           bundler-cache: true
           working-directory: ${{ matrix.ruby.working-directory || '.' }}
+      - name: Hack bundler deps for Ruby >= 3.4.0
+        if: startsWith(matrix.ruby.version, '3.4')
+        run: |
+          mkdir -p vendor
+          ln -sf .github/fixtures/vendor/bundle vendor/bundle
       - name: Run rspec ci.sh
         run: |
           ./script/ci.sh
