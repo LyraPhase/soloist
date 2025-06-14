@@ -37,6 +37,8 @@ jobs:
         run: |
           mkdir -p vendor
           ln -s .github/fixtures/.bundle .bundle
+          rm Gemfile.lock
+          ln -s .github/fixtures/Gemfile.lock Gemfile.lock
       - name: Run rspec ci.sh
         run: |
           ./script/ci.sh
