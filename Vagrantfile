@@ -32,18 +32,20 @@ Vagrant.configure("2") do |config|
     shell.path = File.expand_path('../script/bootstrap.sh', __FILE__)
     shell.args = '$SUDO_USER'
   end
+  # install .ruby-version @ .ruby-gemset
+  ruby_version = File.open('.ruby-version', 'r').read.chomp
+  ruby_gemset = File.open('.ruby-gemset', 'r').read.chomp
+  config.vm.provision 'shell', inline: "bash -lc 'rvm use --install --default ruby-#{ruby_version}; rvm gemset create #{ruby_gemset}'", privileged: false
+  config.vm.provision 'shell', inline: "bash -lc 'cd /vagrant/ && gem install \"bundler:$(grep -A 1 \"BUNDLED WITH\" Gemfile.lock | tail -n 1)\"'", privileged: false
+
   # Use separate bundler config inside Vagrant VM
   config.vm.provision 'shell' do |shell|
     shell.path = File.expand_path('../script/ci-bundle-config.sh', __FILE__)
     shell.args = '$SUDO_USER'
   end
-  # install .ruby-version @ .ruby-gemset
-  ruby_version = File.open('.ruby-version', 'r').read.chomp
-  ruby_gemset = File.open('.ruby-gemset', 'r').read.chomp
-  config.vm.provision 'shell', inline: "bash -lc 'echo $PATH; which rvm; type rvm; rvm use --install --default ruby-#{ruby_version}; rvm gemset create #{ruby_gemset}'", privileged: false
-  config.vm.provision 'shell', inline: "bash -lc 'cd /vagrant/ && gem install \"bundler:$(grep -A 1 \"BUNDLED WITH\" Gemfile.lock | tail -n 1)\"'", privileged: false
+
   # Bundle install as user via rvm
-  config.vm.provision 'shell', inline: "bash -lc 'cd /vagrant/ && bundle config --local set frozen true'", privileged: false
+  config.vm.provision 'shell', inline: "bash -lc 'cd /vagrant/ && bundle config set --local frozen true'", privileged: false
   config.vm.provision 'shell', inline: "bash -lc 'cd /vagrant/ && bundle install'", privileged: false
   # accept + persist chef license accept for non-interactive CI
   config.vm.provision 'shell', inline: "bash -lc 'cd /vagrant/ && rvmsudo bundle exec chef-solo --chef-license accept --local-mode --no-listen --why-run'", privileged: false
