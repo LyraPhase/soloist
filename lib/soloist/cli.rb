@@ -29,8 +29,11 @@ module Soloist
 
     no_tasks do
       def install_cookbooks
-        Dir.chdir(File.dirname(rc_path)) do
-          Berkshelf::Berksfile.from_file('Berksfile').install
+        rc_repo_path = File.dirname(rc_path)
+        Dir.chdir(rc_repo_path) do
+          berksfile = Berkshelf::Berksfile.from_file('Berksfile')
+          berksfile.install
+          berksfile.vendor(File.join(rc_repo_path, 'cookbooks'))
         end
       end
 
