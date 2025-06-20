@@ -31,7 +31,7 @@ jobs:
           ruby-version: ${{ matrix.ruby.version }}
           bundler-cache: true
           working-directory: ${{ matrix.ruby.working-directory || '.' }}
-          cache-version: 2
+          cache-version: 3
       - name: Hack bundler deps for Ruby >= 3.4.0
         if: startsWith(matrix.ruby.version, '3.4')
         run: |
