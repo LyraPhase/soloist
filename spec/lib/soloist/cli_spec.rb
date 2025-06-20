@@ -111,6 +111,8 @@ RSpec.describe Soloist::CLI do
           before do
             system_commands.clear
             allow(Process).to receive(:uid).and_return(1000) # Simulate a non-root user
+            allow(File).to receive(:directory?).and_call_original
+            allow(File).to receive(:directory?).with('/var/chef/cache').and_return(false)
           end
           it "creates the cache path using sudo" do
             cli.chef
@@ -126,6 +128,8 @@ RSpec.describe Soloist::CLI do
           before do
             system_commands.clear
             allow(Process).to receive(:uid).and_return(0)
+            allow(File).to receive(:directory?).and_call_original
+            allow(File).to receive(:directory?).with('/var/chef/cache').and_return(false)
           end
 
           it "does not use sudo but still creates cache path" do
