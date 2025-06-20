@@ -33,7 +33,7 @@ module Soloist
         Dir.chdir(rc_repo_path) do
           berksfile = Berkshelf::Berksfile.from_file('Berksfile')
           berksfile.install
-          berksfile.vendor(File.join(rc_repo_path, 'cookbooks'))
+          berksfile.vendor(File.expand_path('cookbooks', File.realpath(rc_repo_path)))
         end
       end
 

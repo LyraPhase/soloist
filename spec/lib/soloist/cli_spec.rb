@@ -103,7 +103,7 @@ RSpec.describe Soloist::CLI do
         it "runs berkshelf" do
           expect(Berkshelf::Berksfile).to receive(:from_file).with('Berksfile').and_return(berksfile)
           expect(berksfile).to receive(:install)
-          expect(berksfile).to receive(:vendor).with(File.join(base_path, 'cookbooks'))
+          expect(berksfile).to receive(:vendor).with(File.expand_path('cookbooks', File.realpath(base_path)))
           cli.chef
         end
 
