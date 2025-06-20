@@ -19,7 +19,10 @@ Vagrant.configure("2") do |config|
     # p.name = "ubuntu-22-04"
   end
   config.vm.network :private_network, :type => 'dhcp', :autostart => true
-  config.vm.synced_folder ".", "/vagrant", type: 'nfs', nfs_version: 4, nfs_udp: false, nfs_export: true
+
+  config.vm.synced_folder ".", "/vagrant", type: 'nfs', nfs_version: 3, nfs_udp: false, nfs_export: true
+  ## TODO: Figure out why NFSv4 does not squash root to anonuid=1000 properly for files with 600 access
+  ##config.vm.synced_folder ".", "/vagrant", type: 'nfs', nfs_version: 4, nfs_udp: false, nfs_export: true
   config.vm.communicator = 'ssh'
 
   config.vm.provision 'shell', inline: 'test -d /etc/skel/.ssh || mkdir /etc/skel/.ssh'
@@ -58,5 +61,5 @@ Vagrant.configure("2") do |config|
   # So, we must manually run it first... redundantly
   config.vm.provision 'shell', inline: "bash -lc 'cd /vagrant/test/fixtures && bundle exec berks install'", privileged: false
   # Run soloist integration test against fixtures
-  config.vm.provision 'shell', inline: "bash -lc 'cd /vagrant/test/fixtures && bundle exec soloist'", privileged: false
+  config.vm.provision 'shell', inline: "bash -lc 'cd /vagrant/test/fixtures && rvmsudo bundle exec soloist'", privileged: false
 end
