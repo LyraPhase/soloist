@@ -1,10 +1,12 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
 
 Vagrant.configure("2") do |config|
-  #ssh_key = File.read(File.expand_path("~/.ssh/identity.lyra.pub"))
+  # ssh_key = File.read(File.expand_path("~/.ssh/identity.lyra.pub"))
 
   config.vm.box = "bento/ubuntu-22.04"
   # config.vm.provider :virtualbox do |p|
+  #   p.name = "ubuntu-22-04"
   config.vm.provider :libvirt do |libvirt|
     libvirt.driver = 'kvm' if File.exist?('/dev/kvm')
     libvirt.uri = 'qemu:///system'
@@ -12,27 +14,28 @@ Vagrant.configure("2") do |config|
     # libvirt.uri = 'qemu+tls://saturn.internal/system'
     # libvirt.system_uri = 'qemu+tls://saturn.internal/system'
     libvirt.memory = '1024'
-    libvirt.disk_driver_opts = { cache:'writeback', io:'threads', discard:'unmap', detect_zeroes:'unmap' }
+    libvirt.disk_driver_opts = { cache: 'writeback', io: 'threads', discard: 'unmap', detect_zeroes: 'unmap' }
     # UEFI boot w/Tianocore edk2
     libvirt.loader = '/usr/share/edk2/x64/OVMF_CODE.4m.fd'
     libvirt.nvram_template = '/usr/share/edk2/x64/OVMF_VARS.4m.fd'
-    # p.name = "ubuntu-22-04"
   end
-  config.vm.network :private_network, :type => 'dhcp', :autostart => true
+  # For Vagrant VM network LAN only, no NAT or else the box becomes multi-homed
+  # with managment network + this one. 2 default routes are added after reboot
+  config.vm.network :private_network, type: 'dhcp', autostart: true, libvirt__forward_mode: 'none'
 
-  config.vm.synced_folder ".", "/vagrant", type: 'nfs', nfs_version: 3, nfs_udp: false, nfs_export: true
+  # config.vm.synced_folder ".", "/vagrant", type: 'nfs', nfs_version: 3, nfs_udp: false, nfs_export: true
   ## TODO: Figure out why NFSv4 does not squash root to anonuid=1000 properly for files with 600 access
-  ##config.vm.synced_folder ".", "/vagrant", type: 'nfs', nfs_version: 4, nfs_udp: false, nfs_export: true
+  config.vm.synced_folder '.', '/vagrant', type: 'nfs', nfs_version: 4, nfs_udp: false, nfs_export: true
   config.vm.communicator = 'ssh'
 
   config.vm.provision 'shell', inline: 'test -d /etc/skel/.ssh || mkdir /etc/skel/.ssh'
-  #config.vm.provision 'shell' do |shell|
-  #  shell.inline = "echo $@ | tee /etc/skel/.ssh/authorized_keys"
-  #  shell.args = ssh_key
-  #end
+  # config.vm.provision 'shell' do |shell|
+  #   shell.inline = "echo $@ | tee /etc/skel/.ssh/authorized_keys"
+  #   shell.args = ssh_key
+  # end
 
   config.vm.provision 'shell' do |shell|
-    shell.path = File.expand_path('../script/bootstrap.sh', __FILE__)
+    shell.path = File.expand_path('script/bootstrap.sh', __dir__)
     shell.args = '$SUDO_USER'
   end
   # install .ruby-version @ .ruby-gemset
@@ -43,7 +46,7 @@ Vagrant.configure("2") do |config|
 
   # Use separate bundler config inside Vagrant VM
   config.vm.provision 'shell' do |shell|
-    shell.path = File.expand_path('../script/ci-bundle-config.sh', __FILE__)
+    shell.path = File.expand_path('script/ci-bundle-config.sh', __dir__)
     shell.args = '$SUDO_USER'
   end
 
