@@ -33,3 +33,5 @@ runcmd:
   - sync /run/cloud-init/tmp/foot-extra-terminfo_1.20.2-3_all.deb
   - dpkg -i /run/cloud-init/tmp/foot-extra-terminfo_1.20.2-3_all.deb
   - rm /run/cloud-init/tmp/foot-extra-terminfo_1.20.2-3_all.deb
+  - systemctl stop multipathd.service multipathd.socket apt-daily-upgrade.timer unattended-upgrades.service fwupd.service udisks2.service packagekit.service
+  - systemctl disable multipathd.service multipathd.socket apt-daily-upgrade.timer unattended-upgrades.service fwupd.service udisks2.service
