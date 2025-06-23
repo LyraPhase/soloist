@@ -8,3 +8,8 @@ tmp/
 test/fixtures/Berksfile.lock
 test/fixtures/cookbooks/
 test/fixtures/nodes/
+.github/fixtures/spec
+.github/fixtures/test
+.github/fixtures/vendor
+.github/fixtures/.bundle
+.github/fixtures/Gemfile.lock
