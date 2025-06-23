@@ -2,8 +2,7 @@
 # vi: set ft=ruby :
 # frozen_string_literal: true
 
-Vagrant.configure('2') do |config|
-  # ssh_key = File.read(File.expand_path("~/.ssh/identity.lyra.pub"))
+Vagrant.configure('2') do |config| # rubocop:disable Metrics/BlockLength
   # Only NFSv3 working w/o hostname + idmapd.conf Domain set
   # config.vm.box = 'bento/ubuntu-22.04'
   # NFSv4 via cloud-init seed ISO
