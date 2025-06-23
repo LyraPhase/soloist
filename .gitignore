@@ -5,3 +5,6 @@ pkg/*
 /examples/cookbooks
 /examples/tmp
 tmp/
+test/fixtures/Berksfile.lock
+test/fixtures/cookbooks/
+test/fixtures/nodes/
