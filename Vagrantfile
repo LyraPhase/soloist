@@ -5,6 +5,23 @@ Vagrant.configure("2") do |config|
   # ssh_key = File.read(File.expand_path("~/.ssh/identity.lyra.pub"))
 
   config.vm.box = "bento/ubuntu-22.04"
+  config.vm.hostname = "vagrant.internal"
+  config.vm.cloud_init content_type: "text/cloud-config", path: "./test/fixtures/user-data.yaml"
+#  config.vm.cloud_init content_type: "text/cloud-config",
+#    inline: <<-EOF
+#      hostname: vagrant
+#      fqdn: vagrant.internal
+#      prefer_fqdn_over_hostname: true
+#      package_update: true
+#      packages:
+#        - foot-terminfo
+#      runcmd:
+#        - [curl, "-Ls", "http://ports.ubuntu.com/pool/universe/f/foot/foot-extra-terminfo_1.20.2-3_all.deb", "-o", "/root/foot-extra-terminfo_1.20.2-3_all.deb"]
+#        - dpkg -i foot-extra-terminfo_1.20.2-3_all.deb
+#        - rm foot-extra-terminfo_1.20.2-3_all.deb
+#    EOF
+  config.vm.cloud_init_first_boot_only = false
+
   # config.vm.provider :virtualbox do |p|
   #   p.name = "ubuntu-22-04"
   config.vm.provider :libvirt do |libvirt|
@@ -13,11 +30,23 @@ Vagrant.configure("2") do |config|
     libvirt.system_uri = 'qemu:///system'
     # libvirt.uri = 'qemu+tls://saturn.internal/system'
     # libvirt.system_uri = 'qemu+tls://saturn.internal/system'
+    libvirt.machine_type = 'q35'
     libvirt.memory = '1024'
     libvirt.disk_driver_opts = { cache: 'writeback', io: 'threads', discard: 'unmap', detect_zeroes: 'unmap' }
     # UEFI boot w/Tianocore edk2
     libvirt.loader = '/usr/share/edk2/x64/OVMF_CODE.4m.fd'
     libvirt.nvram_template = '/usr/share/edk2/x64/OVMF_VARS.4m.fd'
+    # Use .internal TLD for management network domain
+    # References:
+    #   - https://www.icann.org/en/board-activities-and-meetings/materials/approved-resolutions-special-meeting-of-the-icann-board-29-07-2024-en#section2.a
+    #   - https://datatracker.ietf.org/doc/draft-davies-internal-tld/
+    libvirt.management_network_domain = 'internal'
+    # Note: NFSv4 mounts will happen over the management network, so set idmapd.conf Domain accordingly
+    # Also set NFSv4 root export with fsid=0 to use 'anonuid=1000,anongid=1000'
+    # for the management network subnet in /etc/exports or /etc/exports.d/
+    # libvirt.storage :file, :path => 'cloud-init-seed.iso.qcow2', :type => 'qcow2'
+    libvirt.storage :file, device: :cdrom, type: 'qcow2',
+                           path: File.expand_path('cloud-init-seed.iso.qcow2', File.dirname(__FILE__))
   end
   # For Vagrant VM network LAN only, no NAT or else the box becomes multi-homed
   # with managment network + this one. 2 default routes are added after reboot
