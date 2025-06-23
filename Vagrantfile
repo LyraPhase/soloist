@@ -11,8 +11,6 @@ Vagrant.configure('2') do |config|
   config.vm.hostname = 'vagrant.internal'
   config.vm.cloud_init_first_boot_only = false
 
-  # config.vm.provider :virtualbox do |p|
-  #   p.name = "ubuntu-22-04"
   config.vm.provider :libvirt do |libvirt|
     libvirt.driver = 'kvm' if File.exist?('/dev/kvm')
     libvirt.uri = 'qemu:///system'
@@ -31,10 +29,7 @@ Vagrant.configure('2') do |config|
     #   - https://www.icann.org/en/board-activities-and-meetings/materials/approved-resolutions-special-meeting-of-the-icann-board-29-07-2024-en#section2.a
     #   - https://datatracker.ietf.org/doc/draft-davies-internal-tld/
     libvirt.management_network_domain = 'internal'
-    # Note: NFSv4 mounts will happen over the management network, so set idmapd.conf Domain accordingly
-    # Also set NFSv4 root export with fsid=0 to use 'anonuid=1000,anongid=1000'
-    # for the management network subnet in /etc/exports or /etc/exports.d/
-    # libvirt.storage :file, :path => 'cloud-init-seed.iso.qcow2', :type => 'qcow2'
+
     libvirt.storage :file, device: :cdrom, type: 'qcow2',
                            path: File.expand_path('./test/fixtures/cloud-init-seed.iso.qcow2', __dir__),
                            bus: 'sata'
@@ -44,15 +39,16 @@ Vagrant.configure('2') do |config|
   config.vm.network :private_network, type: 'dhcp', autostart: true, libvirt__forward_mode: 'none'
 
   # config.vm.synced_folder ".", "/vagrant", type: 'nfs', nfs_version: 3, nfs_udp: false, nfs_export: true
-  ## TODO: Figure out why NFSv4 does not squash root to anonuid=1000 properly for files with 600 access
+  # Note: NFSv4 does not squash root to anonuid=1000 properly for files with 600 access on bento/ubuntu-22.04
+  # This is because the NFSv4 client used Domain = 'localdomain' by default which did not match the host's domain
+  # NFSv4 mounts will happen over the management network, so set idmapd.conf Domain accordingly
+  # Also set NFSv4 root export with fsid=0 to use 'anonuid=1000,anongid=1000'
+  # for the management network subnet in /etc/exports or /etc/exports.d/
   config.vm.synced_folder '.', '/vagrant', type: 'nfs', nfs_version: 4, nfs_udp: false, nfs_export: true
   config.vm.communicator = 'ssh'
 
   config.vm.provision 'shell', inline: 'test -d /etc/skel/.ssh || mkdir /etc/skel/.ssh'
-  # config.vm.provision 'shell' do |shell|
-  #   shell.inline = "echo $@ | tee /etc/skel/.ssh/authorized_keys"
-  #   shell.args = ssh_key
-  # end
+
   # Wait for cloud-init to finish
   config.vm.provision 'shell', inline: 'cloud-init status --wait'
 
