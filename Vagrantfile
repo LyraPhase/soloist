@@ -4,23 +4,11 @@
 
 Vagrant.configure('2') do |config|
   # ssh_key = File.read(File.expand_path("~/.ssh/identity.lyra.pub"))
-
-  config.vm.box = 'bento/ubuntu-22.04'
+  # Only NFSv3 working w/o hostname + idmapd.conf Domain set
+  # config.vm.box = 'bento/ubuntu-22.04'
+  # NFSv4 via cloud-init seed ISO
+  config.vm.box = 'cloud-image/ubuntu-24.04'
   config.vm.hostname = 'vagrant.internal'
-  config.vm.cloud_init content_type: 'text/cloud-config', path: './test/fixtures/user-data.yaml'
-  #  config.vm.cloud_init content_type: "text/cloud-config",
-  #    inline: <<-EOF
-  #      hostname: vagrant
-  #      fqdn: vagrant.internal
-  #      prefer_fqdn_over_hostname: true
-  #      package_update: true
-  #      packages:
-  #        - foot-terminfo
-  #      runcmd:
-  #        - [curl, "-Ls", "http://ports.ubuntu.com/pool/universe/f/foot/foot-extra-terminfo_1.20.2-3_all.deb", "-o", "/root/foot-extra-terminfo_1.20.2-3_all.deb"]
-  #        - dpkg -i foot-extra-terminfo_1.20.2-3_all.deb
-  #        - rm foot-extra-terminfo_1.20.2-3_all.deb
-  #    EOF
   config.vm.cloud_init_first_boot_only = false
 
   # config.vm.provider :virtualbox do |p|
@@ -47,7 +35,8 @@ Vagrant.configure('2') do |config|
     # for the management network subnet in /etc/exports or /etc/exports.d/
     # libvirt.storage :file, :path => 'cloud-init-seed.iso.qcow2', :type => 'qcow2'
     libvirt.storage :file, device: :cdrom, type: 'qcow2',
-                           path: File.expand_path('cloud-init-seed.iso.qcow2', File.dirname(__FILE__))
+                           path: File.expand_path('./test/fixtures/cloud-init-seed.iso.qcow2', __dir__),
+                           bus: 'sata'
   end
   # For Vagrant VM network LAN only, no NAT or else the box becomes multi-homed
   # with managment network + this one. 2 default routes are added after reboot
@@ -63,6 +52,8 @@ Vagrant.configure('2') do |config|
   #   shell.inline = "echo $@ | tee /etc/skel/.ssh/authorized_keys"
   #   shell.args = ssh_key
   # end
+  # Wait for cloud-init to finish
+  config.vm.provision 'shell', inline: 'cloud-init status --wait'
 
   config.vm.provision 'shell' do |shell|
     shell.path = File.expand_path('script/bootstrap.sh', __dir__)
