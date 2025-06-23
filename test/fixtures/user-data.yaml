@@ -1,0 +1,12 @@
+#cloud-config
+hostname: vagrant
+fqdn: vagrant.internal
+prefer_fqdn_over_hostname: true
+package_update: true
+packages:
+  - foot-terminfo
+runcmd:
+  - [curl, "-Ls", "http://ports.ubuntu.com/pool/universe/f/foot/foot-extra-terminfo_1.20.2-3_all.deb", "-o", "/root/foot-extra-terminfo_1.20.2-3_all.deb"]
+  - dpkg -i foot-extra-terminfo_1.20.2-3_all.deb
+  - rm foot-extra-terminfo_1.20.2-3_all.deb
+
