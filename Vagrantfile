@@ -1,25 +1,25 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-Vagrant.configure("2") do |config|
+Vagrant.configure('2') do |config|
   # ssh_key = File.read(File.expand_path("~/.ssh/identity.lyra.pub"))
 
-  config.vm.box = "bento/ubuntu-22.04"
-  config.vm.hostname = "vagrant.internal"
-  config.vm.cloud_init content_type: "text/cloud-config", path: "./test/fixtures/user-data.yaml"
-#  config.vm.cloud_init content_type: "text/cloud-config",
-#    inline: <<-EOF
-#      hostname: vagrant
-#      fqdn: vagrant.internal
-#      prefer_fqdn_over_hostname: true
-#      package_update: true
-#      packages:
-#        - foot-terminfo
-#      runcmd:
-#        - [curl, "-Ls", "http://ports.ubuntu.com/pool/universe/f/foot/foot-extra-terminfo_1.20.2-3_all.deb", "-o", "/root/foot-extra-terminfo_1.20.2-3_all.deb"]
-#        - dpkg -i foot-extra-terminfo_1.20.2-3_all.deb
-#        - rm foot-extra-terminfo_1.20.2-3_all.deb
-#    EOF
+  config.vm.box = 'bento/ubuntu-22.04'
+  config.vm.hostname = 'vagrant.internal'
+  config.vm.cloud_init content_type: 'text/cloud-config', path: './test/fixtures/user-data.yaml'
+  #  config.vm.cloud_init content_type: "text/cloud-config",
+  #    inline: <<-EOF
+  #      hostname: vagrant
+  #      fqdn: vagrant.internal
+  #      prefer_fqdn_over_hostname: true
+  #      package_update: true
+  #      packages:
+  #        - foot-terminfo
+  #      runcmd:
+  #        - [curl, "-Ls", "http://ports.ubuntu.com/pool/universe/f/foot/foot-extra-terminfo_1.20.2-3_all.deb", "-o", "/root/foot-extra-terminfo_1.20.2-3_all.deb"]
+  #        - dpkg -i foot-extra-terminfo_1.20.2-3_all.deb
+  #        - rm foot-extra-terminfo_1.20.2-3_all.deb
+  #    EOF
   config.vm.cloud_init_first_boot_only = false
 
   # config.vm.provider :virtualbox do |p|
@@ -70,8 +70,10 @@ Vagrant.configure("2") do |config|
   # install .ruby-version @ .ruby-gemset
   ruby_version = File.open('.ruby-version', 'r').read.chomp
   ruby_gemset = File.open('.ruby-gemset', 'r').read.chomp
-  config.vm.provision 'shell', inline: "bash -lc 'rvm use --install --default ruby-#{ruby_version}; rvm gemset create #{ruby_gemset}'", privileged: false
-  config.vm.provision 'shell', inline: "bash -lc 'cd /vagrant/ && gem install \"bundler:$(grep -A 1 \"BUNDLED WITH\" Gemfile.lock | tail -n 1)\"'", privileged: false
+  config.vm.provision 'shell',
+                      inline: "bash -lc 'rvm use --install --default ruby-#{ruby_version}; rvm gemset create #{ruby_gemset}'", privileged: false
+  config.vm.provision 'shell',
+                      inline: "bash -lc 'cd /vagrant/ && gem install \"bundler:$(grep -A 1 \"BUNDLED WITH\" Gemfile.lock | tail -n 1)\"'", privileged: false
 
   # Use separate bundler config inside Vagrant VM
   config.vm.provision 'shell' do |shell|
@@ -80,10 +82,12 @@ Vagrant.configure("2") do |config|
   end
 
   # Bundle install as user via rvm
-  config.vm.provision 'shell', inline: "bash -lc 'cd /vagrant/ && bundle config set --local frozen true'", privileged: false
+  config.vm.provision 'shell', inline: "bash -lc 'cd /vagrant/ && bundle config set --local frozen true'",
+                               privileged: false
   config.vm.provision 'shell', inline: "bash -lc 'cd /vagrant/ && bundle install'", privileged: false
   # accept + persist chef license accept for non-interactive CI
-  config.vm.provision 'shell', inline: "bash -lc 'cd /vagrant/ && rvmsudo bundle exec chef-solo --chef-license accept --local-mode --no-listen --why-run'", privileged: false
+  config.vm.provision 'shell',
+                      inline: "bash -lc 'cd /vagrant/ && rvmsudo bundle exec chef-solo --chef-license accept --local-mode --no-listen --why-run'", privileged: false
   # Run the ci script
   config.vm.provision 'shell', inline: "bash -lc 'cd /vagrant/ && ./script/ci.sh'", privileged: false
   # Install no-op test fixture cookbook ckbk
@@ -91,7 +95,9 @@ Vagrant.configure("2") do |config|
   #       Thus, cookbook files may still be in the process of writing
   #       while soloist tries to access them
   # So, we must manually run it first... redundantly
-  config.vm.provision 'shell', inline: "bash -lc 'cd /vagrant/test/fixtures && bundle exec berks install'", privileged: false
+  config.vm.provision 'shell', inline: "bash -lc 'cd /vagrant/test/fixtures && bundle exec berks install'",
+                               privileged: false
   # Run soloist integration test against fixtures
-  config.vm.provision 'shell', inline: "bash -lc 'cd /vagrant/test/fixtures && rvmsudo bundle exec soloist'", privileged: false
+  config.vm.provision 'shell', inline: "bash -lc 'cd /vagrant/test/fixtures && rvmsudo bundle exec soloist'",
+                               privileged: false
 end
