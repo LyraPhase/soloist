@@ -64,13 +64,13 @@ Vagrant.configure('2') do |config|
   ruby_version = File.open('.ruby-version', 'r').read.chomp
   ruby_gemset = File.open('.ruby-gemset', 'r').read.chomp
   config.vm.provision 'shell',
-                      inline: "bash -lc
-                        'rvm use --install --default ruby-#{ruby_version};
+                      inline: "bash -lc \\
+                        'rvm use --install --default ruby-#{ruby_version}; \\
                         rvm gemset create #{ruby_gemset}'",
                       privileged: false
   config.vm.provision 'shell',
-                      inline: "bash -lc
-                        'cd /vagrant/ &&
+                      inline: "bash -lc \\
+                        'cd /vagrant/ && \\
                         gem install \"bundler:$(grep -A 1 \"BUNDLED WITH\" Gemfile.lock | tail -n 1)\"'",
                       privileged: false
 
@@ -82,22 +82,22 @@ Vagrant.configure('2') do |config|
 
   # Bundle install as user via rvm
   config.vm.provision 'shell',
-                      inline: "bash -lc
+                      inline: "bash -lc \\
                         'cd /vagrant/ && bundle config set --local frozen true'",
                       privileged: false
   config.vm.provision 'shell',
-                      inline: "bash -lc
+                      inline: "bash -lc \\
                         'cd /vagrant/ && bundle install'",
                       privileged: false
   # accept + persist chef license accept for non-interactive CI
   config.vm.provision 'shell',
-                      inline: "bash -lc
-                        'cd /vagrant/ &&
+                      inline: "bash -lc \\
+                        'cd /vagrant/ && \\
                         rvmsudo bundle exec chef-solo --chef-license accept --local-mode --no-listen --why-run'",
                       privileged: false
   # Run the ci script
   config.vm.provision 'shell',
-                      inline: "bash -lc
+                      inline: "bash -lc \\
                         'cd /vagrant/ && ./script/ci.sh'",
                       privileged: false
   # Install no-op test fixture cookbook ckbk
@@ -105,11 +105,11 @@ Vagrant.configure('2') do |config|
   #       Thus, cookbook files may still be in the process of writing
   #       while soloist tries to access them
   # So, we must manually run it first... redundantly
-  config.vm.provision 'shell', inline: "bash -lc
+  config.vm.provision 'shell', inline: "bash -lc \\
                                  'cd /vagrant/test/fixtures && bundle exec berks install'",
                                privileged: false
   # Run soloist integration test against fixtures
-  config.vm.provision 'shell', inline: "bash -lc
+  config.vm.provision 'shell', inline: "bash -lc \\
                                  'cd /vagrant/test/fixtures && rvmsudo bundle exec soloist'",
                                privileged: false
 end
