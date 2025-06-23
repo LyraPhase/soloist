@@ -14,7 +14,7 @@ echo "Setting up RVM"
 user=$1
 [ -z "$user" ] && user="ubuntu"
 
-grep "^$user:" /etc/passwd > /dev/null || sudo useradd -m $user -G sudo,rvm,admin -s /bin/bash
+grep "^$user:" /etc/passwd > /dev/null || sudo useradd -m "$user" -G sudo,rvm,admin -s /bin/bash
 sudo sync /etc/passwd
 
 user_home="$(getent passwd "${user}" | cut -d: -f 6)"
@@ -48,7 +48,7 @@ packages="build-essential openssl libreadline8 libreadline-dev curl git-core
 
 echo "Detected RVM requirements: $packages"
 
-selections=`dpkg --get-selections`
+selections=$(dpkg --get-selections)
 for package in $packages
 do
   if ! echo "$selections" | grep "^$package\s" > /dev/null
@@ -62,7 +62,7 @@ then
   echo "Satisfied RVM requirements"
 else
   echo "Installing missing RVM requirements: $to_install"
-  sudo apt-get --no-install-recommends install -y $to_install
+  sudo apt-get --no-install-recommends install -y "$to_install"
 fi
 
 # Reference: https://rvm.io/integration/sudo
