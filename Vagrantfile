@@ -20,7 +20,8 @@ Vagrant.configure('2') do |config|
     # libvirt.uri = 'qemu+tls://saturn.internal/system'
     # libvirt.system_uri = 'qemu+tls://saturn.internal/system'
     libvirt.machine_type = 'q35'
-    libvirt.memory = '1024'
+    libvirt.memory = '2048'
+    libvirt.cpus = 2
     libvirt.disk_driver_opts = { cache: 'writeback', io: 'threads', discard: 'unmap', detect_zeroes: 'unmap' }
     # UEFI boot w/Tianocore edk2
     libvirt.loader = '/usr/share/edk2/x64/OVMF_CODE.4m.fd'
