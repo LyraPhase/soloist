@@ -1,3 +1,4 @@
+require 'erb'
 module Soloist
   class RoyalCrown
     attr_accessor :path, :node_attributes, :cookbook_paths, :recipes, :env_variable_switches

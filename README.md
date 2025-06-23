@@ -1,6 +1,7 @@
 # Soloist
 
-[![Build Status](https://secure.travis-ci.org/mkocher/soloist.png)](http://travis-ci.org/mkocher/soloist) [![Code Climate](https://codeclimate.com/github/mkocher/soloist.png)](https://codeclimate.com/github/mkocher/soloist)
+[![Build Status](https://github.com/trinitronx/soloist/actions/workflows/ci.yml/badge.svg)](https://github.com/trinitronx/soloist/actions/workflows/ci.yml)
+[![Code Climate](https://qlty.sh/badges/6172bf5d-6dcc-4639-9881-9365d80c01eb/maintainability.svg)](https://qlty.sh/gh/LyraPhase/projects/soloist)
 
 Soloist lets you quickly and easily converge [Chef](http://opscode.com/chef) recipes using [chef-solo](http://wiki.opscode.com/display/chef/Chef+Solo).  It does not require a Chef server, but can exploit [community cookbooks](http://community.opscode.com/cookbooks), github-hosted cookbooks and locally-sourced cookbooks through [Librarian](https://github.com/applicationsonline/librarian).
 

@@ -89,11 +89,26 @@ module Soloist
     end
 
     def log_level
-      ENV["LOG_LEVEL"] || "info"
+      case ENV["LOG_LEVEL"]
+      when 'debug'
+        :debug
+      when 'info'
+        :info
+      when 'warn'
+        :warn
+      when 'error'
+        :error
+      when 'fatal'
+        :fatal
+      else
+        puts "Unknown log level: #{ENV['LOG_LEVEL']}" if ENV['LOG_LEVEL']
+        puts 'Using default log level: info' if ENV['LOG_LEVEL']
+        :info
+      end
     end
 
     def debug?
-      log_level == "debug"
+      log_level == :debug
     end
 
     private
